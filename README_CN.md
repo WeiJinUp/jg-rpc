@@ -31,9 +31,9 @@
 - 服务注册模式
 - 基于反射的方法调用
 
-这是**三阶段项目**的第一阶段。最终框架将包括：
+这是**三阶段项目**：
 - ✅ **第一阶段**：使用原生Java API构建最简RPC骨架（已完成）
-- 🚧 **第二阶段**：引入工业级组件（Netty、动态代理、可插拔序列化）
+- ✅ **第二阶段**：引入工业级组件（Netty、动态代理、可插拔序列化）（已完成）
 - 🚧 **第三阶段**：生产级特性（服务发现、负载均衡、异步调用、优雅停机）
 
 ## ✨ 核心特性
@@ -372,7 +372,7 @@ public class ClientApp {
 
 **JinGuan**
 
-- GitHub: [@yourusername](https://github.com/yourusername)
+- GitHub: [@WeiJinUp](https://github.com/WeiJinUp)
 - Email: your.email@example.com
 
 ## 🙏 致谢

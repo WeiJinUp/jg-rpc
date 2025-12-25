@@ -28,6 +28,11 @@ public class RpcResponse implements Serializable {
      */
     private boolean success;
     
+    /**
+     * Request ID for matching with request (Phase 2)
+     */
+    private String requestId;
+    
     public RpcResponse() {
     }
     
@@ -79,6 +84,14 @@ public class RpcResponse implements Serializable {
     
     public void setSuccess(boolean success) {
         this.success = success;
+    }
+    
+    public String getRequestId() {
+        return requestId;
+    }
+    
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
     }
     
     @Override
