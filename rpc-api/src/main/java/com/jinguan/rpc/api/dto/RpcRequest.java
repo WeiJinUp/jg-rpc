@@ -34,6 +34,11 @@ public class RpcRequest implements Serializable {
      */
     private Class<?>[] paramTypes;
     
+    /**
+     * Request ID for matching request and response (Phase 2)
+     */
+    private String requestId;
+    
     public RpcRequest() {
     }
     
@@ -74,6 +79,14 @@ public class RpcRequest implements Serializable {
     
     public void setParamTypes(Class<?>[] paramTypes) {
         this.paramTypes = paramTypes;
+    }
+    
+    public String getRequestId() {
+        return requestId;
+    }
+    
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
     }
     
     @Override

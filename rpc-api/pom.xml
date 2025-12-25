@@ -17,4 +17,24 @@
     <name>RPC API Module</name>
     <description>RPC framework API module - contains service interfaces and DTOs</description>
 
+    <dependencies>
+        <!-- Netty (needed for codec) -->
+        <dependency>
+            <groupId>io.netty</groupId>
+            <artifactId>netty-all</artifactId>
+        </dependency>
+
+        <!-- Gson (needed for JSON serializer) -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+        </dependency>
+
+        <!-- Logging -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-api</artifactId>
+        </dependency>
+    </dependencies>
+
 </project>
