@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  zookeeper:
+    image: zookeeper:3.8
+    container_name: jg-rpc-zookeeper
+    ports:
+      - "2181:2181"
+    environment:
+      ZOO_MY_ID: 1
+      ZOO_SERVERS: server.1=zookeeper:2888:3888;2181
+    volumes:
+      - zk-data:/data
+      - zk-datalog:/datalog
+    networks:
+      - jg-rpc-network
+
+volumes:
+  zk-data:
+  zk-datalog:
+
+networks:
+  jg-rpc-network:
+    driver: bridge
+

@@ -7,13 +7,65 @@
 
 ## [未发布]
 
-### 计划中 - 第三阶段
-- 服务注册与发现（Zookeeper）
-- 负载均衡策略（随机、轮询、加权）
-- 异步RPC调用（CompletableFuture）
-- 优雅停机（ShutdownHook）
-- 健康检查和心跳机制
-- 监控和度量
+### 计划中 - 未来增强
+- 健康检查和心跳机制增强
+- 监控和度量（Metrics）
+- 熔断器（Circuit Breaker）
+- 限流（Rate Limiting）
+- 链路追踪（Tracing）
+
+## [3.0.0-SNAPSHOT] - 2025-12-25
+
+### 新增 - 第三阶段（生产级特性）✅
+
+#### 服务注册与发现
+- **Zookeeper集成** - Apache Curator客户端
+  - ServiceRegistry接口抽象
+  - ZookeeperServiceRegistry实现
+  - 服务注册为临时节点 `/jg-rpc/{serviceName}/providers/{ip:port}`
+  - ServiceDiscovery接口
+  - ZookeeperServiceDiscovery实现
+  - 自动服务发现和实例列表获取
+
+#### 负载均衡
+- **LoadBalancer接口** - 负载均衡抽象
+- **RandomLoadBalancer** - 随机策略
+- **RoundRobinLoadBalancer** - 轮询策略  
+- **ConsistentHashLoadBalancer** - 一致性哈希
+  - 虚拟节点支持
+  - MD5哈希算法
+  - 环形空间映射
+
+#### 异步调用
+- **CompletableFuture支持** - 方法返回CompletableFuture时自动异步处理
+- **AsyncHelloService** - 异步服务接口示例
+- **RpcClientProxyWithDiscovery** - 支持同步和异步调用的增强代理
+
+#### 优雅停机
+- **ShutdownHook** - JVM关闭钩子
+- **三阶段停机流程**:
+  1. 从Zookeeper注销所有服务
+  2. 等待5秒让正在处理的请求完成
+  3. 关闭Netty和线程池资源
+
+#### 增强的客户端
+- **RpcClientWithDiscovery** - 集成服务发现和负载均衡
+- **客户端缓存** - 复用到同一服务器的连接
+- **自动故障转移** - 服务下线时自动切换
+
+#### 基础设施
+- **Docker Compose** - 一键启动Zookeeper
+- **Phase3ServerBootstrap** - 完整的服务端示例
+- **Phase3ClientBootstrap** - 完整的客户端示例
+
+### 技术栈更新
+- Apache Curator 5.5.0 (Zookeeper客户端)
+- 支持Docker部署
+
+### 架构改进
+- 服务治理能力
+- 微服务友好
+- 生产级可靠性
 
 ## [2.0.0-SNAPSHOT] - 2025-12-25
 

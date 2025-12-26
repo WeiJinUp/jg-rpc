@@ -130,7 +130,7 @@ public class NettyRpcClient {
             });
             
             // Wait for response (with timeout)
-            return responseFuture.get(10, TimeUnit.SECONDS);
+            return responseFuture.get(30, TimeUnit.SECONDS);
             
         } catch (Exception e) {
             logger.error("Failed to send request", e);
