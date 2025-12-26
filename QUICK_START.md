@@ -1,126 +1,220 @@
 # JG-RPC 快速开始指南
 
-## 第一次运行
+## 🎯 选择你的起点
 
-### 步骤1：构建项目
+JG-RPC分为三个阶段，每个阶段都是独立可运行的：
 
-在项目根目录执行：
+- **Phase 1**: 基础RPC（Socket + 反射）- 理解原理
+- **Phase 2**: 工业级组件（Netty + 动态代理）- 提升性能
+- **Phase 3**: 生产级特性（Zookeeper + 负载均衡）- 服务治理
 
+选择你想要的阶段开始！
+
+---
+
+## 📌 Phase 1: 基础RPC（最简单）
+
+### 环境要求
+- Java 8+
+- Maven 3.6+
+
+### 步骤1: 构建项目
 ```bash
+cd /Users/jinguan/Desktop/jg-rpc
 mvn clean install
 ```
 
-### 步骤2：启动服务端
-
-打开第一个终端，执行：
-
+### 步骤2: 启动服务端（终端1）
 ```bash
 cd rpc-server
 mvn exec:java -Dexec.mainClass="com.jinguan.rpc.server.ServerBootstrap"
 ```
 
-或者如果你使用IDE（IntelliJ IDEA / Eclipse）：
-1. 导入Maven项目
-2. 找到 `ServerBootstrap.java`
-3. 右键 → Run 'ServerBootstrap.main()'
-
-### 步骤3：运行客户端
-
-打开第二个终端，执行：
-
+### 步骤3: 运行客户端（终端2）
 ```bash
 cd rpc-client
 mvn exec:java -Dexec.mainClass="com.jinguan.rpc.client.ClientBootstrap"
 ```
 
-或使用IDE：
-1. 找到 `ClientBootstrap.java`
-2. 右键 → Run 'ClientBootstrap.main()'
+**成功标志**: 看到 "RPC Call Successful!"
 
-### 步骤4：运行示例程序
+---
 
-运行更多示例：
+## 📌 Phase 2: 工业级组件（Netty + 动态代理）
 
+### 环境要求
+- Java 8+
+- Maven 3.6+
+
+### 步骤1: 启动Netty服务端（终端1）
+```bash
+cd rpc-server
+mvn exec:java -Dexec.mainClass="com.jinguan.rpc.server.netty.NettyServerBootstrap"
+```
+
+### 步骤2: 运行客户端（终端2）
 ```bash
 cd rpc-client
-mvn exec:java -Dexec.mainClass="com.jinguan.rpc.client.RpcClientExample"
+mvn exec:java -Dexec.mainClass="com.jinguan.rpc.client.netty.NettyClientBootstrap"
 ```
 
-## 常见问题
+**亮点**: 
+- ✨ 动态代理，像调用本地方法
+- ✨ 高性能Netty通信
+- ✨ 可插拔序列化
 
-### Q1: 端口8888已被占用怎么办？
+---
 
-修改端口号：
-- 在 `ServerBootstrap.java` 中修改：`new RpcServer(8888)` → `new RpcServer(9999)`
-- 在 `ClientBootstrap.java` 中修改：`new RpcClient("localhost", 8888)` → `new RpcClient("localhost", 9999)`
+## 📌 Phase 3: 生产级特性（完整功能）⭐
 
-### Q2: 如何添加自己的服务？
+### 环境要求
+- Java 8+
+- Maven 3.6+
+- Docker Desktop（运行Zookeeper）
 
-**步骤1：在rpc-api模块定义接口**
-```java
-package com.jinguan.rpc.api;
-
-public interface CalculatorService {
-    int add(int a, int b);
-    int subtract(int a, int b);
-}
+### 步骤1: 启动Zookeeper
+```bash
+cd /Users/jinguan/Desktop/jg-rpc
+docker-compose up -d
 ```
 
-**步骤2：在rpc-server模块实现接口**
-```java
-package com.jinguan.rpc.server.impl;
-
-import com.jinguan.rpc.api.CalculatorService;
-
-public class CalculatorServiceImpl implements CalculatorService {
-    @Override
-    public int add(int a, int b) {
-        return a + b;
-    }
-    
-    @Override
-    public int subtract(int a, int b) {
-        return a - b;
-    }
-}
+验证Zookeeper运行：
+```bash
+docker ps | grep zookeeper
 ```
 
-**步骤3：在ServerBootstrap中注册服务**
-```java
-RpcServer rpcServer = new RpcServer(8888);
-rpcServer.register(new HelloServiceImpl());
-rpcServer.register(new CalculatorServiceImpl()); // 新增
-rpcServer.start();
+### 步骤2: 启动服务端（终端1）
+```bash
+cd rpc-server
+mvn exec:java -Dexec.mainClass="com.jinguan.rpc.server.Phase3ServerBootstrap"
 ```
 
-**步骤4：在客户端调用**
-```java
-RpcRequest request = new RpcRequest(
-    CalculatorService.class.getName(),
-    "add",
-    new Object[]{10, 20},
-    new Class<?>[]{int.class, int.class}
-);
-RpcResponse response = rpcClient.sendRequest(request);
-System.out.println("10 + 20 = " + response.getData());
+### 步骤3: 运行客户端（终端2）
+```bash
+cd rpc-client
+mvn exec:java -Dexec.mainClass="com.jinguan.rpc.client.Phase3ClientBootstrap"
 ```
 
-### Q3: 客户端无法连接到服务器？
+### 步骤4: 测试负载均衡（可选）
 
-检查清单：
-1. ✅ 服务器是否已启动
-2. ✅ 端口号是否一致
-3. ✅ 防火墙是否阻止了端口
-4. ✅ 如果是远程连接，IP地址是否正确
+启动第二个服务端实例（终端3）：
+```bash
+cd rpc-server
+# 修改端口为9002，然后运行
+# 或者使用 -Dport=9002 参数
+mvn exec:java -Dexec.mainClass="com.jinguan.rpc.server.Phase3ServerBootstrap"
+```
 
-## 下一步
+客户端会自动在两个服务器之间负载均衡！
 
-- 阅读 [README.md](README.md) 了解完整功能
-- 查看源码理解RPC实现原理
-- 等待第二阶段更新（Netty + 动态代理）
-- 等待第三阶段更新（服务发现 + 负载均衡）
+### 步骤5: 测试优雅停机
 
-## 需要帮助？
+在服务端终端按 `Ctrl+C`，观察输出：
+```
+========================================
+  Starting graceful shutdown...
+========================================
+Step 1: Unregistering services from Zookeeper...
+✓ All services unregistered
+Step 2: Waiting for ongoing requests to complete...
+✓ Wait completed
+Step 3: Shutting down Netty server...
+✓ Netty server stopped
+========================================
+  Graceful shutdown completed
+========================================
+```
 
-如有问题，欢迎提Issue或联系作者。
+**完整特性**:
+- ✨ 自动服务注册与发现
+- ✨ 轮询负载均衡
+- ✨ 异步调用支持
+- ✨ 优雅停机
 
+---
+
+## 🐛 常见问题
+
+### Q1: 端口被占用
+修改端口号或杀掉占用进程：
+```bash
+lsof -i :9000
+kill -9 <PID>
+```
+
+### Q2: Zookeeper连接失败
+确保Zookeeper运行中：
+```bash
+docker ps | grep zookeeper
+docker logs jg-rpc-zookeeper
+```
+
+重启Zookeeper：
+```bash
+docker-compose restart
+```
+
+### Q3: 如何停止Zookeeper
+```bash
+docker-compose down
+```
+
+### Q4: 没有Docker怎么办？
+
+可以下载Zookeeper独立版本：
+```bash
+# 下载
+wget https://dlcdn.apache.org/zookeeper/zookeeper-3.8.3/apache-zookeeper-3.8.3-bin.tar.gz
+tar -xzf apache-zookeeper-3.8.3-bin.tar.gz
+cd apache-zookeeper-3.8.3-bin
+
+# 启动
+bin/zkServer.sh start
+```
+
+---
+
+## 📊 功能对比
+
+| 功能 | Phase 1 | Phase 2 | Phase 3 |
+|------|---------|---------|---------|
+| 网络 | Socket | Netty | Netty |
+| 调用方式 | 手动构建 | 动态代理 | 动态代理 |
+| 序列化 | Java原生 | 可插拔 | 可插拔 |
+| 服务发现 | ❌ | ❌ | ✅ Zookeeper |
+| 负载均衡 | ❌ | ❌ | ✅ 3种策略 |
+| 异步调用 | ❌ | 部分 | ✅ 完整支持 |
+| 优雅停机 | ❌ | 基础 | ✅ 完整流程 |
+| 端口 | 8888 | 9000 | 9001 |
+
+---
+
+## 🎓 学习路径建议
+
+### 新手（第一次接触）
+```
+Phase 1 → 理解RPC原理 → Phase 2 → 理解工业级实践 → Phase 3 → 理解服务治理
+```
+
+### 时间有限
+```
+直接看 Phase 3 → 然后回看 Phase 1/2 理解演进过程
+```
+
+### 准备面试
+```
+Phase 1 理解原理 → Phase 3 展示完整功能 → 对比说明技术选型
+```
+
+---
+
+## 🚀 下一步
+
+- 查看 [README.md](README.md) 了解完整功能
+- 查看源码理解实现原理
+- 尝试添加自己的服务
+- 思考如何应用到实际项目
+
+---
+
+**提示**: Phase 3 需要 Zookeeper，如果暂时没有环境，可以先从 Phase 1/2 开始！

@@ -114,6 +114,11 @@ public class NettyRpcServerHandler extends SimpleChannelInboundHandler<RpcMessag
             Object[] parameters = request.getParameters();
             Object result = method.invoke(serviceImpl, parameters);
             
+            // If method returns CompletableFuture, wait for it to complete
+            if (result instanceof java.util.concurrent.CompletableFuture) {
+                result = ((java.util.concurrent.CompletableFuture<?>) result).get();
+            }
+            
             logger.info("Method invoked successfully: {}.{}", interfaceName, methodName);
             return RpcResponse.success(result);
             
