@@ -119,7 +119,7 @@ jg-rpc/
 
 ```bash
 # 克隆仓库
-git clone https://github.com/yourusername/jg-rpc.git
+git clone https://github.com/WeiJinUp/jg-rpc.git
 cd jg-rpc
 
 # 使用Maven构建
@@ -373,7 +373,7 @@ public class ClientApp {
 **JinGuan**
 
 - GitHub: [@WeiJinUp](https://github.com/WeiJinUp)
-- Email: your.email@example.com
+- Email: 18340309128@163.com
 
 ## 🙏 致谢
 

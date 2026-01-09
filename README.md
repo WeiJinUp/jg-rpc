@@ -119,7 +119,7 @@ jg-rpc/
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/jg-rpc.git
+git clone https://github.com/WeiJinUp/jg-rpc.git
 cd jg-rpc
 
 # Build with Maven
@@ -346,8 +346,8 @@ This project is open source and available under the [MIT License](LICENSE).
 
 **JinGuan**
 
-- GitHub: [@yourusername](https://github.com/yourusername)
-- Email: your.email@example.com
+- GitHub: [@WeiJinUp](https://github.com/WeiJinUp)
+- Email: 18340309128@163.com
 
 ## 🙏 Acknowledgments
 
