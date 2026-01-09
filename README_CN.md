@@ -38,7 +38,7 @@
 
 ## ✨ 核心特性
 
-### 当前特性（第一阶段）
+### 第一阶段：基础框架（已完成）
 
 - 🔌 **纯Java实现** - 无外部依赖，仅使用Java SE
 - 🌐 **基于Socket通信** - 使用`java.net.Socket`实现可靠的TCP/IP通信
@@ -48,15 +48,23 @@
 - 📝 **服务注册** - 简单但有效的服务注册机制
 - 💬 **请求/响应模型** - 清晰的DTO设计用于RPC通信
 
-### 规划特性（第二、三阶段）
+### 第二阶段：工业级组件（已完成）
 
 - ⚡ **Netty集成** - 高性能异步网络通信
 - 🎭 **动态代理** - 像调用本地方法一样透明的RPC调用
-- 🔧 **可插拔序列化** - 支持JSON、Protobuf和自定义序列化器
+- 🔧 **可插拔序列化** - 支持JSON、Java序列化和自定义序列化器
+- 📦 **自定义协议** - 包含魔数、版本号、消息类型的二进制协议
+- 🔄 **自定义编解码器** - 高效的消息序列化编解码器
+- 🏗️ **连接复用** - 长连接提升性能
+
+### 第三阶段：生产级特性（已完成）
+
 - 🏗️ **服务发现** - 基于Zookeeper的服务注册与发现
-- ⚖️ **负载均衡** - 多种策略（随机、轮询、加权）
+- ⚖️ **负载均衡** - 多种策略（随机、轮询、一致性哈希）
 - ⚡ **异步调用** - 基于CompletableFuture的异步调用
 - 🛡️ **优雅停机** - 正确的资源清理和连接排空
+- 🔄 **客户端缓存** - 连接池和连接复用
+- 📊 **临时节点** - 服务故障时自动注销
 
 ## 🏗️ 技术架构
 
@@ -187,24 +195,63 @@ jg-rpc/
 │   ├── pom.xml
 │   └── src/main/java/com/jinguan/rpc/api/
 │       ├── HelloService.java                  # 服务接口
-│       └── dto/
-│           ├── RpcRequest.java                # 请求DTO
-│           └── RpcResponse.java               # 响应DTO
+│       ├── async/
+│       │   └── AsyncHelloService.java         # 异步服务接口
+│       ├── codec/
+│       │   ├── RpcEncoder.java                # 消息编码器
+│       │   └── RpcDecoder.java                # 消息解码器
+│       ├── dto/
+│       │   ├── RpcRequest.java                # 请求DTO
+│       │   └── RpcResponse.java               # 响应DTO
+│       ├── loadbalance/
+│       │   └── LoadBalancer.java              # 负载均衡器接口
+│       ├── protocol/
+│       │   ├── RpcProtocol.java               # 协议常量
+│       │   └── RpcMessage.java                # 协议消息
+│       ├── registry/
+│       │   ├── ServiceDiscovery.java          # 服务发现接口
+│       │   └── ServiceRegistry.java           # 服务注册接口
+│       └── serializer/
+│           ├── Serializer.java                # 序列化器接口
+│           ├── JavaSerializer.java            # Java序列化
+│           ├── JsonSerializer.java            # JSON序列化
+│           └── SerializerFactory.java         # 序列化器工厂
 │
 ├── rpc-server/                                # 服务端模块
 │   ├── pom.xml
 │   └── src/main/java/com/jinguan/rpc/server/
-│       ├── RpcServer.java                     # 核心服务端
-│       ├── ServerBootstrap.java               # 服务端入口
-│       └── impl/
-│           └── HelloServiceImpl.java          # 服务实现
+│       ├── RpcServer.java                     # 第一阶段：核心服务端
+│       ├── ServerBootstrap.java              # 第一阶段：服务端入口
+│       ├── RpcServerWithRegistry.java        # 第三阶段：带注册的服务端
+│       ├── Phase3ServerBootstrap.java         # 第三阶段：服务端入口
+│       ├── impl/
+│       │   ├── HelloServiceImpl.java          # 服务实现
+│       │   └── AsyncHelloServiceImpl.java     # 异步服务实现
+│       ├── netty/
+│       │   ├── NettyRpcServer.java            # 第二阶段：Netty服务端
+│       │   ├── NettyRpcServerHandler.java     # 第二阶段：服务端处理器
+│       │   └── NettyServerBootstrap.java      # 第二阶段：服务端入口
+│       └── registry/
+│           └── ZookeeperServiceRegistry.java  # 第三阶段：ZK注册中心
 │
 └── rpc-client/                                # 客户端模块
     ├── pom.xml
     └── src/main/java/com/jinguan/rpc/client/
-        ├── RpcClient.java                     # 核心客户端
-        ├── ClientBootstrap.java               # 简单客户端测试
-        └── RpcClientExample.java              # 高级示例
+        ├── RpcClient.java                     # 第一阶段：核心客户端
+        ├── ClientBootstrap.java               # 第一阶段：客户端入口
+        ├── RpcClientWithDiscovery.java        # 第三阶段：带发现的客户端
+        ├── discovery/
+        │   └── ZookeeperServiceDiscovery.java # 第三阶段：ZK服务发现
+        ├── loadbalance/
+        │   ├── RoundRobinLoadBalancer.java     # 第三阶段：轮询负载均衡
+        │   ├── RandomLoadBalancer.java         # 第三阶段：随机负载均衡
+        │   └── ConsistentHashLoadBalancer.java # 第三阶段：一致性哈希
+        ├── netty/
+        │   ├── NettyRpcClient.java            # 第二阶段：Netty客户端
+        │   └── NettyClientBootstrap.java       # 第二阶段：客户端入口
+        └── proxy/
+            ├── RpcClientProxy.java             # 第二阶段：动态代理
+            └── RpcClientProxyWithDiscovery.java # 第三阶段：带发现的代理
 ```
 
 ## 💡 使用示例
@@ -254,7 +301,7 @@ public class ServerBootstrap {
 }
 ```
 
-### 示例4：从客户端发起RPC调用
+### 示例4：从客户端发起RPC调用（第一阶段）
 
 ```java
 public class ClientApp {
@@ -280,6 +327,56 @@ public class ClientApp {
 }
 ```
 
+### 示例5：动态代理调用（第二阶段）
+
+```java
+public class ClientApp {
+    public static void main(String[] args) {
+        // 创建Netty客户端
+        NettyRpcClient client = new NettyRpcClient("localhost", 9000);
+        
+        // 创建代理工厂
+        RpcClientProxy proxyFactory = new RpcClientProxy(client);
+        
+        // 获取代理实例 - 看起来像本地对象！
+        UserService userService = proxyFactory.getProxy(UserService.class);
+        
+        // 像调用本地方法一样调用远程方法
+        User user = userService.getUserById(1L);
+        System.out.println("获取到用户: " + user);
+    }
+}
+```
+
+### 示例6：服务发现和负载均衡（第三阶段）
+
+```java
+public class ClientApp {
+    public static void main(String[] args) {
+        // 创建服务发现
+        ServiceDiscovery discovery = new ZookeeperServiceDiscovery("localhost:2181");
+        
+        // 创建负载均衡器
+        LoadBalancer loadBalancer = new RoundRobinLoadBalancer();
+        
+        // 创建客户端管理器
+        RpcClientWithDiscovery clientManager = 
+            new RpcClientWithDiscovery(discovery, loadBalancer);
+        
+        // 创建代理工厂
+        RpcClientProxyWithDiscovery proxyFactory = 
+            new RpcClientProxyWithDiscovery(clientManager);
+        
+        // 获取代理 - 自动发现服务并负载均衡
+        UserService userService = proxyFactory.getProxy(UserService.class);
+        
+        // 调用远程方法
+        User user = userService.getUserById(1L);
+        System.out.println("获取到用户: " + user);
+    }
+}
+```
+
 ## 📚 文档导航
 
 ### 📖 可用文档
@@ -293,6 +390,22 @@ public class ClientApp {
 
 查看 [DOCS_GUIDE.md](DOCS_GUIDE.md) 获取所有文档的完整指南。
 
+### 📝 代码文档
+
+所有核心代码文件都包含**详细的中英文双语注释**，说明：
+- 每个方法的详细执行步骤
+- 设计原理和设计决策
+- 技术实现细节
+- 各阶段之间的区别
+- 最佳实践和设计模式
+
+这些注释旨在帮助开发者理解：
+- RPC框架的内部工作原理
+- 网络编程和协议设计
+- 服务发现和负载均衡机制
+- 异步编程模式
+- 分布式系统概念
+
 ## 🗺️ 开发路线
 
 ### ✅ 第一阶段：基础框架（已完成）
@@ -303,34 +416,38 @@ public class ClientApp {
 - [x] 线程池处理并发请求
 - [x] 服务注册模式
 
-### 🚧 第二阶段：工业级组件（规划中）
-- [ ] 使用Netty替换Socket实现高性能I/O
-- [ ] 自定义协议设计（魔数、版本号、序列化类型等）
-- [ ] 自定义编解码器（ByteToMessageCodec）
-- [ ] 动态代理实现透明RPC调用
-- [ ] 可插拔序列化（JSON、Protobuf、Kryo）
-- [ ] SPI（Service Provider Interface）实现扩展性
+### ✅ 第二阶段：工业级组件（已完成）
+- [x] 使用Netty替换Socket实现高性能I/O
+- [x] 自定义协议设计（魔数、版本号、序列化类型等）
+- [x] 自定义编解码器（LengthFieldBasedFrameDecoder）
+- [x] 动态代理实现透明RPC调用
+- [x] 可插拔序列化（JSON、Java序列化）
+- [x] 工厂模式管理序列化器
+- [x] 连接复用和长连接
 
-### 🚧 第三阶段：生产级特性（规划中）
-- [ ] Zookeeper集成实现服务发现
-- [ ] 多种负载均衡策略
-- [ ] 基于CompletableFuture的异步RPC调用
-- [ ] JVM关闭钩子实现优雅停机
-- [ ] 健康检查和心跳机制
-- [ ] 指标监控
-- [ ] 熔断器模式
-- [ ] 限流
+### ✅ 第三阶段：生产级特性（已完成）
+- [x] Zookeeper集成实现服务发现
+- [x] 多种负载均衡策略（随机、轮询、一致性哈希）
+- [x] 基于CompletableFuture的异步RPC调用
+- [x] JVM关闭钩子实现优雅停机
+- [x] 服务注册和自动注销
+- [x] 客户端连接缓存和管理
+- [x] 临时节点实现自动故障检测
 
 ## 🎓 技术亮点
 
 通过构建这个项目，我深入理解了：
 
-1. **网络编程**：如何使用Java Socket进行TCP通信
+1. **网络编程**：如何使用Java Socket和Netty进行TCP通信
 2. **序列化技术**：对象如何转换为字节流进行网络传输
 3. **多线程编程**：如何使用线程池处理并发请求
 4. **反射机制**：如何在运行时动态调用方法
-5. **设计模式**：服务注册、DTO、工厂模式等
-6. **分布式系统**：RPC和面向服务架构的核心概念
+5. **设计模式**：服务注册、DTO、工厂、代理、策略模式等
+6. **分布式系统**：RPC、服务发现、负载均衡的核心概念
+7. **协议设计**：自定义二进制协议的设计和实现
+8. **事件驱动架构**：Netty的Reactor模式和事件循环模型
+9. **服务发现**：基于Zookeeper的注册和发现机制
+10. **负载均衡**：不同算法及其权衡
 
 ### 核心技术栈
 
@@ -342,19 +459,21 @@ public class ClientApp {
 - 线程池（ExecutorService）
 - Maven多模块管理
 
-**第二阶段（规划）**
+**第二阶段（已完成）**
 - Netty 4.x
 - JDK动态代理
-- Gson / Protobuf
+- JSON序列化（Gson）
 - 自定义协议设计
-- SPI机制
+- 工厂模式
+- LengthFieldBasedFrameDecoder
 
-**第三阶段（规划）**
+**第三阶段（已完成）**
 - Apache Curator（Zookeeper客户端）
 - CompletableFuture
 - JVM Shutdown Hook
-- 监控与度量
-- 熔断与限流
+- 负载均衡算法（轮询、随机、一致性哈希）
+- 服务注册发现
+- 连接池管理
 
 ## 🤝 贡献
 

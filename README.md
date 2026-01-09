@@ -36,7 +36,7 @@ This is a three-phase project - **All Phases Completed!**
 
 ## ✨ Features
 
-### Current Features (Phase 1)
+### Phase 1: Foundation (Completed)
 
 - 🔌 **Pure Java Implementation** - No external dependencies, built with Java SE
 - 🌐 **Socket-based Communication** - Reliable TCP/IP communication using `java.net.Socket`
@@ -46,15 +46,23 @@ This is a three-phase project - **All Phases Completed!**
 - 📝 **Service Registry** - Simple but effective service registration mechanism
 - 💬 **Request/Response Model** - Clean DTO design for RPC communication
 
-### Planned Features (Phase 2 & 3)
+### Phase 2: Industrial Components (Completed)
 
 - ⚡ **Netty Integration** - High-performance asynchronous network communication
 - 🎭 **Dynamic Proxy** - Transparent RPC calls that look like local method calls
-- 🔧 **Pluggable Serialization** - Support for JSON, Protobuf, and custom serializers
+- 🔧 **Pluggable Serialization** - Support for JSON, Java, and custom serializers
+- 📦 **Custom Protocol** - Binary protocol with magic number, version, and message type
+- 🔄 **Custom Codec** - Encoder/decoder for efficient message serialization
+- 🏗️ **Connection Reuse** - Long-lived connections for better performance
+
+### Phase 3: Production Features (Completed)
+
 - 🏗️ **Service Discovery** - Zookeeper-based service registration and discovery
-- ⚖️ **Load Balancing** - Multiple strategies (Random, Round-Robin, Weighted)
+- ⚖️ **Load Balancing** - Multiple strategies (Random, Round-Robin, Consistent Hash)
 - ⚡ **Async Calls** - CompletableFuture-based asynchronous invocation
 - 🛡️ **Graceful Shutdown** - Proper resource cleanup and connection draining
+- 🔄 **Client Caching** - Connection pooling and reuse
+- 📊 **Ephemeral Nodes** - Automatic service unregistration on failure
 
 ## 🏗️ Architecture
 
@@ -179,30 +187,70 @@ Result: Hello, JinGuan! Welcome to JG-RPC Framework.
 jg-rpc/
 ├── pom.xml                                    # Parent POM
 ├── README.md                                  # This file
+├── README_CN.md                               # Chinese documentation
 ├── .gitignore
 │
 ├── rpc-api/                                   # API Module
 │   ├── pom.xml
 │   └── src/main/java/com/jinguan/rpc/api/
 │       ├── HelloService.java                  # Service interface
-│       └── dto/
-│           ├── RpcRequest.java                # Request DTO
-│           └── RpcResponse.java               # Response DTO
+│       ├── async/
+│       │   └── AsyncHelloService.java         # Async service interface
+│       ├── codec/
+│       │   ├── RpcEncoder.java                # Message encoder
+│       │   └── RpcDecoder.java                # Message decoder
+│       ├── dto/
+│       │   ├── RpcRequest.java                # Request DTO
+│       │   └── RpcResponse.java               # Response DTO
+│       ├── loadbalance/
+│       │   └── LoadBalancer.java              # Load balancer interface
+│       ├── protocol/
+│       │   ├── RpcProtocol.java                # Protocol constants
+│       │   └── RpcMessage.java                # Protocol message
+│       ├── registry/
+│       │   ├── ServiceDiscovery.java          # Service discovery interface
+│       │   └── ServiceRegistry.java           # Service registry interface
+│       └── serializer/
+│           ├── Serializer.java                # Serializer interface
+│           ├── JavaSerializer.java            # Java serialization
+│           ├── JsonSerializer.java            # JSON serialization
+│           └── SerializerFactory.java         # Serializer factory
 │
 ├── rpc-server/                                # Server Module
 │   ├── pom.xml
 │   └── src/main/java/com/jinguan/rpc/server/
-│       ├── RpcServer.java                     # Core server
-│       ├── ServerBootstrap.java               # Server entry point
-│       └── impl/
-│           └── HelloServiceImpl.java          # Service implementation
+│       ├── RpcServer.java                     # Phase 1: Core server
+│       ├── ServerBootstrap.java               # Phase 1: Server entry
+│       ├── RpcServerWithRegistry.java         # Phase 3: Server with registry
+│       ├── Phase3ServerBootstrap.java        # Phase 3: Server entry
+│       ├── impl/
+│       │   ├── HelloServiceImpl.java          # Service implementation
+│       │   └── AsyncHelloServiceImpl.java    # Async service implementation
+│       ├── netty/
+│       │   ├── NettyRpcServer.java            # Phase 2: Netty server
+│       │   ├── NettyRpcServerHandler.java     # Phase 2: Server handler
+│       │   └── NettyServerBootstrap.java     # Phase 2: Server entry
+│       └── registry/
+│           └── ZookeeperServiceRegistry.java  # Phase 3: ZK registry
 │
 └── rpc-client/                                # Client Module
     ├── pom.xml
     └── src/main/java/com/jinguan/rpc/client/
-        ├── RpcClient.java                     # Core client
-        ├── ClientBootstrap.java               # Simple client test
-        └── RpcClientExample.java              # Advanced examples
+        ├── RpcClient.java                     # Phase 1: Core client
+        ├── ClientBootstrap.java               # Phase 1: Client entry
+        ├── RpcClientWithDiscovery.java       # Phase 3: Client with discovery
+        ├── discovery/
+        │   └── ZookeeperServiceDiscovery.java # Phase 3: ZK discovery
+        ├── loadbalance/
+        │   ├── RoundRobinLoadBalancer.java    # Phase 3: Round-robin LB
+        │   ├── RandomLoadBalancer.java         # Phase 3: Random LB
+        │   └── ConsistentHashLoadBalancer.java # Phase 3: Consistent hash LB
+        ├── netty/
+        │   ├── NettyRpcClient.java            # Phase 2: Netty client
+        │   └── NettyClientBootstrap.java      # Phase 2: Client entry
+        └── proxy/
+            ├── RpcClientProxy.java             # Phase 2: Dynamic proxy
+            └── RpcClientProxyWithDiscovery.java # Phase 3: Proxy with discovery
 ```
 
 ## 💡 Usage Examples
@@ -252,7 +300,7 @@ public class ServerBootstrap {
 }
 ```
 
-### Example 4: Make RPC Call from Client
+### Example 4: Make RPC Call from Client (Phase 1)
 
 ```java
 public class ClientApp {
@@ -278,6 +326,56 @@ public class ClientApp {
 }
 ```
 
+### Example 5: Dynamic Proxy (Phase 2)
+
+```java
+public class ClientApp {
+    public static void main(String[] args) {
+        // Create Netty client
+        NettyRpcClient client = new NettyRpcClient("localhost", 9000);
+        
+        // Create proxy factory
+        RpcClientProxy proxyFactory = new RpcClientProxy(client);
+        
+        // Get proxy instance - looks like local object!
+        UserService userService = proxyFactory.getProxy(UserService.class);
+        
+        // Call remote method just like local method
+        User user = userService.getUserById(1L);
+        System.out.println("Got user: " + user);
+    }
+}
+```
+
+### Example 6: Service Discovery & Load Balancing (Phase 3)
+
+```java
+public class ClientApp {
+    public static void main(String[] args) {
+        // Create service discovery
+        ServiceDiscovery discovery = new ZookeeperServiceDiscovery("localhost:2181");
+        
+        // Create load balancer
+        LoadBalancer loadBalancer = new RoundRobinLoadBalancer();
+        
+        // Create client manager
+        RpcClientWithDiscovery clientManager = 
+            new RpcClientWithDiscovery(discovery, loadBalancer);
+        
+        // Create proxy factory
+        RpcClientProxyWithDiscovery proxyFactory = 
+            new RpcClientProxyWithDiscovery(clientManager);
+        
+        // Get proxy - automatically discovers service and balances load
+        UserService userService = proxyFactory.getProxy(UserService.class);
+        
+        // Call remote method
+        User user = userService.getUserById(1L);
+        System.out.println("Got user: " + user);
+    }
+}
+```
+
 ## 📚 Documentation
 
 ### 📖 Available Documents
@@ -291,6 +389,22 @@ public class ClientApp {
 
 For a complete guide to all documentation, see [DOCS_GUIDE.md](DOCS_GUIDE.md).
 
+### 📝 Code Documentation
+
+All core code files include **detailed bilingual comments** (English and Chinese) that explain:
+- Step-by-step execution flow for each method
+- Design principles and rationale
+- Technical implementation details
+- Differences between phases
+- Best practices and patterns
+
+The comments are designed to help developers understand:
+- How RPC frameworks work internally
+- Network programming and protocol design
+- Service discovery and load balancing mechanisms
+- Asynchronous programming patterns
+- Distributed systems concepts
+
 ## 🗺️ Roadmap
 
 ### ✅ Phase 1: Foundation (Completed)
@@ -301,34 +415,38 @@ For a complete guide to all documentation, see [DOCS_GUIDE.md](DOCS_GUIDE.md).
 - [x] Thread pool for concurrent request handling
 - [x] Service registry pattern
 
-### 🚧 Phase 2: Industrial Components (Planned)
-- [ ] Replace Socket with Netty for high-performance I/O
-- [ ] Custom protocol design (magic number, version, serialization type, etc.)
-- [ ] Custom encoder/decoder (ByteToMessageCodec)
-- [ ] Dynamic proxy for transparent RPC calls
-- [ ] Pluggable serialization (JSON, Protobuf, Kryo)
-- [ ] SPI (Service Provider Interface) for extensibility
+### ✅ Phase 2: Industrial Components (Completed)
+- [x] Replace Socket with Netty for high-performance I/O
+- [x] Custom protocol design (magic number, version, serialization type, etc.)
+- [x] Custom encoder/decoder (LengthFieldBasedFrameDecoder)
+- [x] Dynamic proxy for transparent RPC calls
+- [x] Pluggable serialization (JSON, Java serialization)
+- [x] Factory pattern for serializer management
+- [x] Connection reuse and long-lived connections
 
-### 🚧 Phase 3: Production Features (Planned)
-- [ ] Zookeeper integration for service discovery
-- [ ] Multiple load balancing strategies
-- [ ] Asynchronous RPC calls with CompletableFuture
-- [ ] Graceful shutdown with JVM shutdown hooks
-- [ ] Health check and heartbeat mechanism
-- [ ] Metrics and monitoring
-- [ ] Circuit breaker pattern
-- [ ] Rate limiting
+### ✅ Phase 3: Production Features (Completed)
+- [x] Zookeeper integration for service discovery
+- [x] Multiple load balancing strategies (Random, Round-Robin, Consistent Hash)
+- [x] Asynchronous RPC calls with CompletableFuture
+- [x] Graceful shutdown with JVM shutdown hooks
+- [x] Service registration and automatic unregistration
+- [x] Client connection caching and management
+- [x] Ephemeral nodes for automatic failure detection
 
 ## 🎓 Learning Outcomes
 
 Building this project helped me understand:
 
-1. **Network Programming**: How to use Java Sockets for TCP communication
+1. **Network Programming**: How to use Java Sockets and Netty for TCP communication
 2. **Serialization**: How objects are converted to bytes for network transmission
 3. **Multi-threading**: How to handle concurrent requests using thread pools
 4. **Reflection**: How to dynamically invoke methods at runtime
-5. **Design Patterns**: Service Registry, DTO, Factory patterns
-6. **Distributed Systems**: Core concepts of RPC and service-oriented architecture
+5. **Design Patterns**: Service Registry, DTO, Factory, Proxy, Strategy patterns
+6. **Distributed Systems**: Core concepts of RPC, service discovery, and load balancing
+7. **Protocol Design**: Custom binary protocols with magic numbers and versioning
+8. **Event-Driven Architecture**: Netty's Reactor pattern and event loop model
+9. **Service Discovery**: Zookeeper-based registration and discovery mechanisms
+10. **Load Balancing**: Different algorithms and their trade-offs
 
 ## 🤝 Contributing
 
